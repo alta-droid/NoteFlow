@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: NoteRepository
+    private val repository: NoteRepository = NoteRepository(NoteDatabase.getDatabase(application).noteDao())
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -27,11 +27,6 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             else repository.searchNotes(query)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    init {
-        val db = NoteDatabase.getDatabase(application)
-        repository = NoteRepository(db.noteDao())
-    }
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
