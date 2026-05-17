@@ -26,10 +26,10 @@
 -dontwarn com.google.ai.client.generativeai.**
 
 # Keep PdfBox
--keep class com.tomroush.pdfbox.** { *; }
+-keep class com.tom_roush.pdfbox.** { *; }
 -keep class org.apache.fontbox.** { *; }
 -keep class org.apache.pdfbox.** { *; }
--dontwarn com.tomroush.pdfbox.**
+-dontwarn com.tom_roush.pdfbox.**
 -dontwarn org.apache.**
 
 # Keep Gson
