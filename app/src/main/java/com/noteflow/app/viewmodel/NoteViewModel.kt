@@ -52,4 +52,22 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun getNoteById(id: Long): Note? = repository.getNoteById(id)
+
+    private val _essenceResult = MutableStateFlow<com.noteflow.app.repository.EssenceResult?>(null)
+    val essenceResult: StateFlow<com.noteflow.app.repository.EssenceResult?> = _essenceResult.asStateFlow()
+
+    private val _isExtracting = MutableStateFlow(false)
+    val isExtracting: StateFlow<Boolean> = _isExtracting.asStateFlow()
+
+    fun extractEssence(noteContent: String) {
+        viewModelScope.launch {
+            _isExtracting.value = true
+            _essenceResult.value = repository.extractEssence(noteContent)
+            _isExtracting.value = false
+        }
+    }
+    
+    fun clearEssence() {
+        _essenceResult.value = null
+    }
 }

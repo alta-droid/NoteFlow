@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +42,13 @@ fun NoteDetailScreen(
 
     LaunchedEffect(noteId) {
         note = viewModel.getNoteById(noteId)
+    }
+
+    val essenceResult by viewModel.essenceResult.collectAsStateWithLifecycle()
+    val isExtracting by viewModel.isExtracting.collectAsStateWithLifecycle()
+    
+    DisposableEffect(noteId) {
+        onDispose { viewModel.clearEssence() }
     }
 
     val accentColor = note?.let { NoteColors[it.colorIndex % NoteColors.size] } ?: NoteColors[0]
@@ -174,6 +183,54 @@ fun NoteDetailScreen(
                             color = Color.White.copy(alpha = 0.85f),
                             lineHeight = 28.sp
                         )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // AI Essence Section
+                        if (essenceResult != null) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E35).copy(alpha = 0.5f)),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, accentColor.copy(alpha = 0.3f))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text("✨ الخلاصة", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = accentColor)
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(essenceResult!!.summary ?: "", color = Color.White.copy(alpha = 0.9f))
+                                    
+                                    if (!essenceResult!!.actionItems.isNullOrEmpty()) {
+                                        Spacer(Modifier.height(12.dp))
+                                        Text("📝 القراطس (المهام):", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = accentColor)
+                                        Spacer(Modifier.height(4.dp))
+                                        essenceResult!!.actionItems!!.forEach { task ->
+                                            Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.CheckCircleOutline, null, tint = accentColor, modifier = Modifier.size(16.dp))
+                                                Spacer(Modifier.width(8.dp))
+                                                Text(task, color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            Button(
+                                onClick = { viewModel.extractEssence(n.content) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1E35)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                if (isExtracting) {
+                                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = accentColor, strokeWidth = 2.dp)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("جاري استخراج الخلاصة...", color = Color.White)
+                                } else {
+                                    Icon(Icons.Default.AutoAwesome, null, tint = accentColor, modifier = Modifier.size(20.dp))
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("استخراج الخلاصة ✨", color = Color.White)
+                                }
+                            }
+                        }
 
                         Spacer(modifier = Modifier.height(60.dp))
                     }

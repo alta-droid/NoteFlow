@@ -1,10 +1,19 @@
 package com.noteflow.app.repository
 
+import com.google.ai.client.generativeai.GenerativeModel
+import com.noteflow.app.BuildConfig
 import com.noteflow.app.data.Note
 import com.noteflow.app.data.NoteDao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class NoteRepository(private val noteDao: NoteDao) {
+
+    private val generativeModel = GenerativeModel(
+        modelName = "gemini-1.5-flash",
+        apiKey = BuildConfig.GEMINI_API_KEY
+    )
 
     val allNotes: Flow<List<Note>> = noteDao.getAllNotes()
 
@@ -12,11 +21,68 @@ class NoteRepository(private val noteDao: NoteDao) {
 
     suspend fun getNoteById(id: Long): Note? = noteDao.getNoteById(id)
 
-    suspend fun insertNote(note: Note): Long = noteDao.insertNote(note)
+    suspend fun insertNote(note: Note): Long {
+        val enrichedNote = try { enrichNoteWithAI(note) } catch (e: Exception) { note }
+        return noteDao.insertNote(enrichedNote)
+    }
 
-    suspend fun updateNote(note: Note) = noteDao.updateNote(note)
+    suspend fun updateNote(note: Note) {
+        val enrichedNote = try { enrichNoteWithAI(note) } catch (e: Exception) { note }
+        noteDao.updateNote(enrichedNote)
+    }
 
     suspend fun deleteNote(note: Note) = noteDao.deleteNote(note)
 
     suspend fun deleteNoteById(id: Long) = noteDao.deleteNoteById(id)
+
+    private suspend fun enrichNoteWithAI(note: Note): Note = withContext(Dispatchers.IO) {
+        if (note.content.isBlank()) return@withContext note
+        
+        val prompt = """
+            Analyze the following note. Return ONLY a valid JSON object with these keys:
+            "category": A short category name (e.g. Work, Personal, Tech, Idea).
+            "tags": A list of up to 5 relevant keyword strings.
+            
+            Note Content:
+            ${note.content}
+        """.trimIndent()
+        
+        val response = generativeModel.generateContent(prompt)
+        val text = response.text ?: return@withContext note
+        
+        val jsonStr = text.substringAfter("{").substringBeforeLast("}")
+        val fullJson = "{$jsonStr}"
+        
+        try {
+            val gson = com.google.gson.Gson()
+            val result = gson.fromJson(fullJson, AiAnalysisResult::class.java)
+            note.copy(category = result.category, tags = result.tags ?: emptyList())
+        } catch (e: Exception) {
+            note
+        }
+    }
+    
+    suspend fun extractEssence(noteContent: String): EssenceResult? = withContext(Dispatchers.IO) {
+        if (noteContent.isBlank()) return@withContext null
+        val prompt = """
+            Extract the essence of the following note. Return ONLY a valid JSON object with:
+            "summary": "الزبدة" (A concise executive summary in Arabic).
+            "actionItems": ["القراطس", "Task 1", "Task 2"] (A list of actionable tasks in Arabic).
+            
+            Note:
+            $noteContent
+        """.trimIndent()
+        
+        try {
+            val response = generativeModel.generateContent(prompt)
+            val jsonStr = response.text?.substringAfter("{")?.substringBeforeLast("}") ?: return@withContext null
+            val fullJson = "{$jsonStr}"
+            com.google.gson.Gson().fromJson(fullJson, EssenceResult::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
+
+data class AiAnalysisResult(val category: String?, val tags: List<String>?)
+data class EssenceResult(val summary: String?, val actionItems: List<String>?)

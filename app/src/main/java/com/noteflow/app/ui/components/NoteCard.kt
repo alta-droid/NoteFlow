@@ -115,6 +115,27 @@ fun NoteCard(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
+            // Tags/Category
+            if (note.category != null || note.tags.isNotEmpty()) {
+                @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    note.category?.let { cat ->
+                        Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(accentColor.copy(alpha = 0.2f)).padding(horizontal = 6.dp, vertical = 2.dp)) {
+                            Text(text = cat, fontSize = 10.sp, color = accentColor, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    note.tags.take(3).forEach { tag ->
+                        Box(modifier = Modifier.clip(RoundedCornerShape(4.dp)).border(0.5.dp, accentColor.copy(alpha=0.5f), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)) {
+                            Text(text = "#$tag", fontSize = 10.sp, color = Color.White.copy(alpha=0.8f))
+                        }
+                    }
+                }
+            }
+
             // Footer
             Row(
                 modifier = Modifier.fillMaxWidth(),

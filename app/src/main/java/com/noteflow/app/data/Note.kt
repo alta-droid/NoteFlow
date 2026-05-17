@@ -13,5 +13,12 @@ data class Note(
     val createdAt: Long = System.currentTimeMillis(),
     val modifiedAt: Long = System.currentTimeMillis(),
     val reminderTime: Long? = null,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    
+    // AI Features
+    val category: String? = null,
+    val tags: List<String> = emptyList(),
+    val summary: String? = null,
+    val actionItems: List<String> = emptyList(),
+    val contextInfo: String? = null
 )
