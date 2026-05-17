@@ -22,13 +22,33 @@ import com.noteflow.app.viewmodel.NoteViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NoteFlowTheme {
+            val settingsViewModel: com.noteflow.app.viewmodel.SettingsViewModel = hiltViewModel()
+            val appTheme by settingsViewModel.appTheme.collectAsState()
+            
+            val darkTheme = when (appTheme) {
+                "light" -> false
+                "dark" -> true
+                else -> isSystemInDarkTheme()
+            }
+
+            NoteFlowTheme(darkTheme = darkTheme) {
                 NoteFlowNavigation()
             }
         }
@@ -62,7 +82,8 @@ fun NoteFlowNavigation() {
                 viewModel = viewModel,
                 onNoteClick = { id -> navController.navigate("detail/$id") },
                 onAddNote = { navController.navigate("create") },
-                onChatClick = { navController.navigate("chat") }
+                onSettingsClick = { navController.navigate("settings") },
+                onAdvisorClick = { navController.navigate("advisor") }
             )
         }
 
@@ -99,10 +120,18 @@ fun NoteFlowNavigation() {
             )
         }
 
-        composable("chat") {
-            val chatViewModel: com.noteflow.app.viewmodel.ChatViewModel = hiltViewModel()
-            com.noteflow.app.ui.screens.ChatScreen(
-                viewModel = chatViewModel,
+        composable("settings") {
+            val settingsViewModel: com.noteflow.app.viewmodel.SettingsViewModel = hiltViewModel()
+            com.noteflow.app.ui.screens.SettingsScreen(
+                viewModel = settingsViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("advisor") {
+            val advisorViewModel: com.noteflow.app.viewmodel.AdvisorViewModel = hiltViewModel()
+            com.noteflow.app.ui.screens.AdvisorScreen(
+                viewModel = advisorViewModel,
                 onBack = { navController.popBackStack() }
             )
         }

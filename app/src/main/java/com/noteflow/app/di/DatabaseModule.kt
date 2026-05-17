@@ -26,4 +26,10 @@ object DatabaseModule {
     fun provideNoteDao(database: NoteDatabase): NoteDao {
         return database.noteDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(@ApplicationContext context: Context): com.noteflow.app.repository.SettingsRepository {
+        return com.noteflow.app.repository.SettingsRepository(context)
+    }
 }

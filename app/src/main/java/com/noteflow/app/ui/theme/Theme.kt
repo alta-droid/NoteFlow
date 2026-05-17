@@ -26,9 +26,16 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
+    primary = Color(0xFF6200EE),
+    secondary = Color(0xFF03DAC6),
+    tertiary = Color(0xFF3700B3),
+    background = Color(0xFFF5F5F7),
+    surface = Color.White,
+    surfaceVariant = Color(0xFFE0E0E0),
+    onPrimary = Color.White,
+    onBackground = Color(0xFF121212),
+    onSurface = Color(0xFF121212),
+    onSurfaceVariant = Color(0xFF555555),
 )
 
 @Composable
@@ -43,7 +50,9 @@ fun NoteFlowTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
     }
 

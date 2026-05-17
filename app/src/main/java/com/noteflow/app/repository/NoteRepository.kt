@@ -6,21 +6,25 @@ import com.noteflow.app.data.Note
 import com.noteflow.app.data.NoteDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import com.noteflow.app.repository.SettingsRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
-
-    private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
-        apiKey = BuildConfig.GEMINI_API_KEY
-    )
+class NoteRepository @Inject constructor(
+    private val noteDao: NoteDao,
+    private val settingsRepository: SettingsRepository
+) {
 
     val allNotes: Flow<List<Note>> = noteDao.getAllNotes()
 
-    fun searchNotes(query: String): Flow<List<Note>> = noteDao.searchNotes(query)
+    fun searchNotes(query: String): Flow<List<Note>> {
+        return noteDao.searchNotes("%$query%")
+    }
 
-    suspend fun getNoteById(id: Long): Note? = noteDao.getNoteById(id)
+    suspend fun getNoteById(id: Long): Note? {
+        return noteDao.getNoteById(id)
+    }
 
     suspend fun insertNote(note: Note): Long {
         val enrichedNote = try { enrichNoteWithAI(note) } catch (e: Exception) { note }
@@ -32,13 +36,23 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
         noteDao.updateNote(enrichedNote)
     }
 
-    suspend fun deleteNote(note: Note) = noteDao.deleteNote(note)
+    suspend fun deleteNote(note: Note) {
+        noteDao.deleteNote(note)
+    }
 
     suspend fun deleteNoteById(id: Long) = noteDao.deleteNoteById(id)
 
     private suspend fun enrichNoteWithAI(note: Note): Note = withContext(Dispatchers.IO) {
         if (note.content.isBlank()) return@withContext note
         
+        val apiKey = settingsRepository.apiKeyFlow.first()
+        if (apiKey.isBlank()) return@withContext note
+
+        val generativeModel = com.google.ai.client.generativeai.GenerativeModel(
+            modelName = "gemini-1.5-flash",
+            apiKey = apiKey
+        )
+
         val needsTitle = note.title.isBlank()
         val titleInstruction = if (needsTitle) "\"title\": A catchy, short title (max 5 words)," else ""
         
@@ -68,15 +82,23 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
         }
     }
     
-    suspend fun extractEssence(noteContent: String): EssenceResult? = withContext(Dispatchers.IO) {
-        if (noteContent.isBlank()) return@withContext null
+    suspend fun extractEssence(content: String): EssenceResult = withContext(Dispatchers.IO) {
+        if (content.isBlank()) return@withContext EssenceResult(null, null)
+
+        val apiKey = settingsRepository.apiKeyFlow.first()
+        if (apiKey.isBlank()) return@withContext EssenceResult("يرجى إدخال مفتاح API في الإعدادات.", null)
+
+        val generativeModel = com.google.ai.client.generativeai.GenerativeModel(
+            modelName = "gemini-1.5-flash",
+            apiKey = apiKey
+        )
         val prompt = """
             Extract the essence of the following note. Return ONLY a valid JSON object with:
             "summary": "الزبدة" (A concise executive summary in Arabic).
             "actionItems": ["القراطس", "Task 1", "Task 2"] (A list of actionable tasks in Arabic).
             
             Note:
-            $noteContent
+            $content
         """.trimIndent()
         
         try {

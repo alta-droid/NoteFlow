@@ -31,7 +31,8 @@ import com.noteflow.app.ui.theme.DarkBackground
 import com.noteflow.app.ui.theme.DarkSurface
 import com.noteflow.app.viewmodel.NoteViewModel
 
-import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.AutoGraph
+import androidx.compose.material.icons.filled.Settings
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -39,7 +40,8 @@ fun HomeScreen(
     viewModel: NoteViewModel,
     onNoteClick: (Long) -> Unit,
     onAddNote: () -> Unit,
-    onChatClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onAdvisorClick: () -> Unit
 ) {
     val notes by viewModel.notes.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -48,19 +50,15 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(Color(0xFF0D0D1A), Color(0xFF12122A), Color(0xFF0D0D1A))
-                )
-            )
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
 
             // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 56.dp, bottom = 8.dp),
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -69,25 +67,39 @@ fun HomeScreen(
                         text = "NoteFlow ✨",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "${notes.size} ملاحظة",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.4f),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
                 
-                IconButton(onClick = onChatClick) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF00FFB2).copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.AutoAwesome, "اسأل ملاحظاتك", tint = Color(0xFF00FFB2))
+                Row {
+                    IconButton(onClick = onAdvisorClick) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.AutoGraph, "المستشار الذكي", tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(onClick = onSettingsClick) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Settings, "الإعدادات", tint = MaterialTheme.colorScheme.onBackground)
+                        }
                     }
                 }
             }
@@ -99,9 +111,9 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 8.dp),
-                placeholder = { Text("ابحث في ملاحظاتك...", color = Color.White.copy(alpha = 0.4f)) },
+                placeholder = { Text("ابحث في ملاحظاتك...", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, null, tint = Color(0xFF7C4DFF))
+                    Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.primary)
                 },
                 trailingIcon = {
                     AnimatedVisibility(visible = searchQuery.isNotEmpty()) {
@@ -109,7 +121,7 @@ fun HomeScreen(
                             viewModel.setSearchQuery("")
                             focusManager.clearFocus()
                         }) {
-                            Icon(Icons.Default.Close, null, tint = Color.White.copy(alpha = 0.6f))
+                            Icon(Icons.Default.Close, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                         }
                     }
                 },
@@ -117,12 +129,12 @@ fun HomeScreen(
                 keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF7C4DFF),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                    focusedContainerColor = DarkSurface,
-                    unfocusedContainerColor = DarkSurface,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true
             )
@@ -166,10 +178,10 @@ fun HomeScreen(
             onClick = onAddNote,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(24.dp),
+                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 24.dp, end = 24.dp),
             shape = CircleShape,
-            containerColor = Color(0xFF7C4DFF),
-            contentColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
             elevation = FloatingActionButtonDefaults.elevation(8.dp)
         ) {
             Icon(

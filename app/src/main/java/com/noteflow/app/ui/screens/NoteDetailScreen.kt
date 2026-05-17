@@ -69,7 +69,7 @@ fun NoteDetailScreen(
                         Brush.verticalGradient(listOf(bgColor, Color(0xFF0D0D1A), Color(0xFF0D0D1A)))
                     )
             ) {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
 
                     // Top bar
                     Row(
