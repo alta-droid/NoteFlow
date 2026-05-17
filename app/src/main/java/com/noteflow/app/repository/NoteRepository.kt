@@ -1,7 +1,5 @@
 package com.noteflow.app.repository
 
-import com.google.ai.client.generativeai.GenerativeModel
-import com.noteflow.app.BuildConfig
 import com.noteflow.app.data.Note
 import com.noteflow.app.data.NoteDao
 import kotlinx.coroutines.Dispatchers
