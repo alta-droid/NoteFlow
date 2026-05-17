@@ -103,11 +103,11 @@ class NoteRepository @Inject constructor(
         
         try {
             val response = generativeModel.generateContent(prompt)
-            val jsonStr = response.text?.substringAfter("{")?.substringBeforeLast("}") ?: return@withContext null
+            val jsonStr = response.text?.substringAfter("{")?.substringBeforeLast("}") ?: return@withContext EssenceResult("تعذر تحليل الملاحظة.", null)
             val fullJson = "{$jsonStr}"
-            com.google.gson.Gson().fromJson(fullJson, EssenceResult::class.java)
+            com.google.gson.Gson().fromJson(fullJson, EssenceResult::class.java) ?: EssenceResult("تعذر تحليل الملاحظة.", null)
         } catch (e: Exception) {
-            null
+            EssenceResult("حدث خطأ: ${e.message}", null)
         }
     }
 }
