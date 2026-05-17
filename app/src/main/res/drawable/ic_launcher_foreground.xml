@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Pencil icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,28L80,40L44,76L32,76L32,64Z"/>
+    <path
+        android:fillColor="#EEE"
+        android:pathData="M76,24L84,32L80,36L72,28Z"/>
+    <path
+        android:fillColor="#AAA"
+        android:pathData="M32,76L36,68L40,72Z"/>
+</vector>

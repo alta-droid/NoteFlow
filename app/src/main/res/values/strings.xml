@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">NoteFlow</string>
+    <string name="add_note">إضافة ملاحظة</string>
+    <string name="edit_note">تعديل الملاحظة</string>
+    <string name="delete_note">حذف الملاحظة</string>
+    <string name="search_notes">ابحث في ملاحظاتك</string>
+    <string name="no_notes">لا توجد ملاحظات بعد</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="reminder">تذكير</string>
+</resources>
