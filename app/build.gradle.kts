@@ -100,5 +100,5 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // PDFBox Android
-    implementation("com.tomroush:pdfbox-android:2.0.27.0")
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 }
