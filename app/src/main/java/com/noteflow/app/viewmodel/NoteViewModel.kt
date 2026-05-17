@@ -1,19 +1,18 @@
 package com.noteflow.app.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.noteflow.app.data.Note
-import com.noteflow.app.data.NoteDatabase
 import com.noteflow.app.repository.NoteRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class NoteViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: NoteRepository = NoteRepository(NoteDatabase.getDatabase(application).noteDao())
+@HiltViewModel
+class NoteViewModel @Inject constructor(
+    private val repository: NoteRepository
+) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()

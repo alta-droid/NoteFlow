@@ -104,10 +104,10 @@ fun NoteCard(
 
             // Content preview
             if (note.content.isNotBlank()) {
-                Text(
+                MarkdownText(
                     text = note.content,
-                    style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 14.sp,
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 20.sp

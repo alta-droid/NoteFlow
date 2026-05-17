@@ -19,6 +19,10 @@ import com.noteflow.app.ui.screens.NoteDetailScreen
 import com.noteflow.app.ui.theme.NoteFlowTheme
 import com.noteflow.app.viewmodel.NoteViewModel
 
+import dagger.hilt.android.AndroidEntryPoint
+import androidx.hilt.navigation.compose.hiltViewModel
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +39,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NoteFlowNavigation() {
     val navController = rememberNavController()
-    val viewModel: NoteViewModel = viewModel()
+    val viewModel: NoteViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
@@ -57,7 +61,8 @@ fun NoteFlowNavigation() {
             HomeScreen(
                 viewModel = viewModel,
                 onNoteClick = { id -> navController.navigate("detail/$id") },
-                onAddNote = { navController.navigate("create") }
+                onAddNote = { navController.navigate("create") },
+                onChatClick = { navController.navigate("chat") }
             )
         }
 
@@ -91,6 +96,14 @@ fun NoteFlowNavigation() {
                 noteId = noteId,
                 onBack = { navController.popBackStack() },
                 onEdit = { id -> navController.navigate("edit/$id") }
+            )
+        }
+
+        composable("chat") {
+            val chatViewModel: com.noteflow.app.viewmodel.ChatViewModel = hiltViewModel()
+            com.noteflow.app.ui.screens.ChatScreen(
+                viewModel = chatViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
     }

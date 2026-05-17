@@ -177,7 +177,7 @@ fun NoteDetailScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         // Content
-                        Text(
+                        com.noteflow.app.ui.components.MarkdownText(
                             text = n.content,
                             fontSize = 17.sp,
                             color = Color.White.copy(alpha = 0.85f),

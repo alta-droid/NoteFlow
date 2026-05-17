@@ -31,12 +31,15 @@ import com.noteflow.app.ui.theme.DarkBackground
 import com.noteflow.app.ui.theme.DarkSurface
 import com.noteflow.app.viewmodel.NoteViewModel
 
+import androidx.compose.material.icons.filled.AutoAwesome
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     viewModel: NoteViewModel,
     onNoteClick: (Long) -> Unit,
-    onAddNote: () -> Unit
+    onAddNote: () -> Unit,
+    onChatClick: () -> Unit
 ) {
     val notes by viewModel.notes.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -54,23 +57,39 @@ fun HomeScreen(
         Column(modifier = Modifier.fillMaxSize()) {
 
             // Header
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 56.dp, bottom = 8.dp)
+                    .padding(start = 24.dp, end = 24.dp, top = 56.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "NoteFlow ✨",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-                Text(
-                    text = "${notes.size} ملاحظة",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.4f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                Column {
+                    Text(
+                        text = "NoteFlow ✨",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "${notes.size} ملاحظة",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.4f),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                
+                IconButton(onClick = onChatClick) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF00FFB2).copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, "اسأل ملاحظاتك", tint = Color(0xFF00FFB2))
+                    }
+                }
             }
 
             // Search bar

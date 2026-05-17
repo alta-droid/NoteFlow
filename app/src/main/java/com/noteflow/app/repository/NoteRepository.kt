@@ -7,8 +7,9 @@ import com.noteflow.app.data.NoteDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class NoteRepository(private val noteDao: NoteDao) {
+class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
@@ -38,8 +39,12 @@ class NoteRepository(private val noteDao: NoteDao) {
     private suspend fun enrichNoteWithAI(note: Note): Note = withContext(Dispatchers.IO) {
         if (note.content.isBlank()) return@withContext note
         
+        val needsTitle = note.title.isBlank()
+        val titleInstruction = if (needsTitle) "\"title\": A catchy, short title (max 5 words)," else ""
+        
         val prompt = """
             Analyze the following note. Return ONLY a valid JSON object with these keys:
+            $titleInstruction
             "category": A short category name (e.g. Work, Personal, Tech, Idea).
             "tags": A list of up to 5 relevant keyword strings.
             
@@ -56,7 +61,8 @@ class NoteRepository(private val noteDao: NoteDao) {
         try {
             val gson = com.google.gson.Gson()
             val result = gson.fromJson(fullJson, AiAnalysisResult::class.java)
-            note.copy(category = result.category, tags = result.tags ?: emptyList())
+            val newTitle = if (needsTitle && !result.title.isNullOrBlank()) result.title else note.title
+            note.copy(category = result.category, tags = result.tags ?: emptyList(), title = newTitle)
         } catch (e: Exception) {
             note
         }
@@ -84,5 +90,5 @@ class NoteRepository(private val noteDao: NoteDao) {
     }
 }
 
-data class AiAnalysisResult(val category: String?, val tags: List<String>?)
+data class AiAnalysisResult(val title: String?, val category: String?, val tags: List<String>?)
 data class EssenceResult(val summary: String?, val actionItems: List<String>?)
