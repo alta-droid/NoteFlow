@@ -18,7 +18,12 @@ object ReminderScheduler {
             context, noteId.toInt(), intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent)
+        try {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent)
+        } catch (e: SecurityException) {
+            // Fallback if permission is missing on Android 14+
+            alarmManager.set(AlarmManager.RTC_WAKEUP, timeMillis, pendingIntent)
+        }
     }
 
     fun cancelReminder(context: Context, noteId: Long) {

@@ -40,6 +40,7 @@
 # Keep data classes
 -keep class com.noteflow.app.data.** { *; }
 -keep class com.noteflow.app.repository.EssenceResult { *; }
+-keep class com.noteflow.app.repository.AiAnalysisResult { *; }
 
 # Keep Kotlin metadata
 -keepattributes RuntimeVisibleAnnotations

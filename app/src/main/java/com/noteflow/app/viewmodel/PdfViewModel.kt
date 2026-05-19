@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import javax.inject.Inject
 import com.tom_roush.pdfbox.pdmodel.PDDocument
@@ -26,6 +28,7 @@ class PdfViewModel @Inject constructor() : ViewModel() {
 
     private var pdfRenderer: PdfRenderer? = null
     private var fileDescriptor: ParcelFileDescriptor? = null
+    private val pdfMutex = Mutex()
 
     private val _pageCount = MutableStateFlow(0)
     val pageCount: StateFlow<Int> = _pageCount.asStateFlow()
@@ -53,24 +56,28 @@ class PdfViewModel @Inject constructor() : ViewModel() {
     }
 
     suspend fun renderPage(pageIndex: Int, width: Int): Bitmap? = withContext(Dispatchers.IO) {
-        try {
-            val renderer = pdfRenderer ?: return@withContext null
-            if (pageIndex < 0 || pageIndex >= renderer.pageCount) return@withContext null
+        pdfMutex.withLock {
+            try {
+                val renderer = pdfRenderer ?: return@withContext null
+                if (pageIndex < 0 || pageIndex >= renderer.pageCount) return@withContext null
 
-            val page = renderer.openPage(pageIndex)
-            val aspectRatio = page.height.toFloat() / page.width.toFloat()
-            val height = (width * aspectRatio).toInt()
+                val page = renderer.openPage(pageIndex)
+                try {
+                    val aspectRatio = page.height.toFloat() / page.width.toFloat()
+                    val height = (width * aspectRatio).toInt()
 
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            // Fill with white before rendering so transparent backgrounds become white
-            bitmap.eraseColor(android.graphics.Color.WHITE)
-            
-            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-            page.close()
-            return@withContext bitmap
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return@withContext null
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
+                    
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    return@withContext bitmap
+                } finally {
+                    page.close()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@withContext null
+            }
         }
     }
 

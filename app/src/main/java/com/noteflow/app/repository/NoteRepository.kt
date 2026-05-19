@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 import com.noteflow.app.repository.SettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class NoteRepository @Inject constructor(
@@ -25,13 +27,25 @@ class NoteRepository @Inject constructor(
     }
 
     suspend fun insertNote(note: Note): Long {
-        val enrichedNote = try { enrichNoteWithAI(note) } catch (e: Exception) { note }
-        return noteDao.insertNote(enrichedNote)
+        val id = noteDao.insertNote(note)
+        enrichAndSave(note.copy(id = id))
+        return id
     }
 
     suspend fun updateNote(note: Note) {
-        val enrichedNote = try { enrichNoteWithAI(note) } catch (e: Exception) { note }
-        noteDao.updateNote(enrichedNote)
+        noteDao.updateNote(note)
+        enrichAndSave(note)
+    }
+
+    private fun enrichAndSave(note: Note) = CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val enrichedNote = enrichNoteWithAI(note)
+            if (enrichedNote != note) {
+                noteDao.updateNote(enrichedNote)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     suspend fun deleteNote(note: Note) {

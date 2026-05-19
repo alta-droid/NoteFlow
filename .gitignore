@@ -1,2 +1,6 @@
 gradle.zip
 gradle-8.7/
+.gradle/
+build.log
+**/build/
+local.properties
